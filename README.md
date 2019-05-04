@@ -33,7 +33,7 @@ du -h --max-depth=1  /data/home/hoturl/data/
 111G    /data/home/hoturl/data/
 ** 生成中间文件夹
 rm -rf  /data/home/hoturl/map_out/ /data/home/hoturl/reduce_out/ /data/home/hoturl/fetch_out/;mkdir /data/home/hoturl/map_out /data/home/hoturl/reduce_out  /data/home/hoturl/fetch_out;
-**启动程序
+** 启动程序
 （输入参数含义依次为: input-path map-out-path reduce-out-path fetch-out-path worker-num buffer-per-line(show be 8 larger than url) map-out-file-num k-op-top-k memory-byte) 
 ./HotUrl  /data/NFAAlgorithm/data/  /data/NFAAlgorithm/map_out/  /data/NFAAlgorithm/reduce_out/reduce_out_  /data/NFAAlgorithm/fetch_out/fetch_out 8 1000 100 100 1073741824
 
