@@ -22,14 +22,15 @@ using namespace std;
 
 void MapTask::run() {
     //读取数据，进行hash到不同的文件中
+    DEBUG << "one map begin..., need buffer num:" << Config::getInstance().mapFileNum() << endl;
     unsigned int hashCode = 0;
     //创建map文件
-    for (int i = 0; Config::getInstance().mapFileNum(); ++i) {
+    for (int i = 0; i < Config::getInstance().mapFileNum(); ++i) {
         shared_ptr<FileBuffer> fileBuffer;
         BufferManager::getInstance().getBuffer(fileBuffer);
         int status = fileBuffer->initFile(Config::getInstance().mapOutFilePrefix()
                                           + intToString(i).c_str(),
-                                          O_WRONLY | O_APPEND | O_CREAT);
+                                          O_WRONLY | O_APPEND | O_CREAT, MODE);
         if (status != SUCCESS) {
             ERROR << "init buffer for map err: file name:" << Config::getInstance().mapOutFilePrefix() + intToString(i)
                   << " status:" << status << endl;
@@ -37,6 +38,9 @@ void MapTask::run() {
         }
         _fdVec.push_back(fileBuffer);
     }
+    Scheduler::getInstance().reportMapTaskReadyOne();
+    DEBUG << "map get buffer success" << endl;
+
 
     //TODO 文件还是太大了还需要进行拆解
     for (int i = 0; i < _bufferPtr->lineNow(); ++i) {
@@ -59,6 +63,7 @@ void MapTask::run() {
                 ERROR << "write file err. ret:" << ret << endl;
                 return;
             }
+            DEBUG << "file name:" << _fdVec[hashCode]->getFileName() << " write one time" << endl;
             ret = _fdVec[hashCode]->clear();
             if (ret != SUCCESS) {
                 ERROR << "clear buffer err. ret:" << ret << endl;
@@ -66,15 +71,16 @@ void MapTask::run() {
             }
         }
 
-        DEBUG << "data :" << data << " will write to:" << hashCode << endl;
+        //DEBUG << "data :" << data << " will write to:" << hashCode << endl;
     }
     for (auto it:_fdVec) {
         if (!it->isEmpty()) {
-            int ret = _fdVec[hashCode]->writeToFile();
+            int ret = it->writeToFile();
             if (ret != SUCCESS) {
                 ERROR << "write file err. ret:" << ret << endl;
                 return;
             }
+            DEBUG << "file name:" << it->getFileName() << " write one time" << endl;
         }
 
     }
@@ -89,7 +95,7 @@ MapTask::~MapTask() {
     }
 }
 
-void GetFileTask::run() {
+void ReadFileTask::run() {
     //打开文件
     DIR *dir;
     struct dirent *ptr;
@@ -122,7 +128,7 @@ void GetFileTask::run() {
     closedir(dir);
 }
 
-int GetFileTask::readFileToTask(string fileName) {
+int ReadFileTask::readFileToTask(string fileName) {
     ifstream in(fileName);
     if (!in.is_open()) {
         ERROR << "open file:" << fileName << " err" << endl;
@@ -157,6 +163,7 @@ int GetFileTask::readFileToTask(string fileName) {
             shared_ptr<MapTask> mapTask = make_shared<MapTask>();
             mapTask->setBufferPtr(baseBuffer);
 
+            //          Scheduler::getInstance().setCanNotRead();
             ThreadPool::getInstance().addTask(mapTask);
 
             Scheduler::getInstance().reportMapTaskCreatedOne();
@@ -167,8 +174,11 @@ int GetFileTask::readFileToTask(string fileName) {
         shared_ptr<MapTask> mapTask = make_shared<MapTask>();
         mapTask->setBufferPtr(baseBuffer);
 
-        Scheduler::getInstance().reportMapTaskCreatedOne();
+        //        Scheduler::getInstance().setCanNotRead();
         ThreadPool::getInstance().addTask(mapTask);
+
+        Scheduler::getInstance().reportMapTaskCreatedOne();
     }
     in.close();
+    return SUCCESS;
 }

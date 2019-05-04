@@ -16,7 +16,7 @@ private:
     int _fd;
     string _fileName;
 public:
-    int open(const char *, int);
+    int open(const char *, int, int );
 
     int read(void *, unsigned int);
 
@@ -29,6 +29,10 @@ public:
         if (_fd != 0) {
             close(_fd);
         }
+    }
+
+    string fileName(){
+        return _fileName;
     }
 
 };

@@ -16,13 +16,14 @@ using namespace std;
 int main(int argc, char *argv[]) {
     int ret = Config::getInstance().init(
             "/home/conniezhong/data",
-            "./map_out_",
-            "./reduce_out_",
-            4,
+            "/home/conniezhong/map_out/",
+            "/home/conniezhong/reduce_out/reduce_out_",
+            2,
             1024,
-            10240,
+            10,
             100,
-            100);
+            10*1024*1024
+    );
 
     if (ret != SUCCESS) {
         ERROR << "init err. ret:" << ret << endl;
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]) {
         return INNER_ERROR;
     }
 
-    ret = BufferManager::getInstance().init(10);
+    ret = BufferManager::getInstance().init(Config::getInstance().bufferNum());
     if (ret != SUCCESS) {
         ERROR << "buffer manager init err" << endl;
         return INNER_ERROR;

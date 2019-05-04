@@ -13,7 +13,7 @@
 
 void ReduceTask::run() {
     //统计不同的url出现的次数到内存
-    //TODO 初始化优化
+    //TODO hash初始化优化
     unordered_map<string, int> hashMap;
     shared_ptr<FileBuffer> fileBuffer;
     BufferManager::getInstance().getBuffer(fileBuffer);

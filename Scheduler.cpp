@@ -14,11 +14,11 @@
 
 Scheduler::Scheduler() : _mapTaskCreatedNum(0), _mapTaskFinishedNum(0), _mapTaskCreateOver(false),
                          _reduceTaskCreatedNum(0), _reduceTaskFinishedNum(0), _reduceTaskCreateOver(0),
-                         _fetchTaskFinied(false) {
+                         _fetchTaskFinied(false),_canReadNext(false) {
 }
 
 int Scheduler::begin() {
-    shared_ptr<GetFileTask> getFileTask = make_shared<GetFileTask>();
+    shared_ptr<ReadFileTask> getFileTask = make_shared<ReadFileTask>();
     if(getFileTask.get() == NULL){
         return MEMORY_ERROR;
     }
@@ -28,6 +28,7 @@ int Scheduler::begin() {
 
 int Scheduler::beginReduce() {
     //打开文件
+    INFO <<"==========reduce begin===========" <<endl;
     DIR *dir;
     struct dirent *ptr;
 
@@ -41,10 +42,10 @@ int Scheduler::beginReduce() {
         if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)    ///current dir OR parrent dir
             continue;
         else if (ptr->d_type == 8) {
-            INFO << "begin process " << ptr->d_name << endl;
-            shared_ptr<ReduceTask> reduceTask;
+            INFO << "reduce begin process " << ptr->d_name << endl;
+            shared_ptr<ReduceTask> reduceTask = make_shared<ReduceTask>();
 
-            reduceTask->setMapFileName(ptr->d_name);
+            reduceTask->setMapFileName(filePath + "/" + ptr->d_name);
             ThreadPool::getInstance().addTask(reduceTask);
             Scheduler::getInstance().reportReduceTaskCreatedOne();
         } else {

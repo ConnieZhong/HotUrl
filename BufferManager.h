@@ -50,8 +50,10 @@ public:
 
     void printInfo() {
         INFO << "addr:" << (long) (_data.get())
-             <<" line now:" << _lineNow << endl;
+             << " line now:" << _lineNow << endl;
     }
+
+
 
 };
 
@@ -62,11 +64,15 @@ private:
 public:
     //FileBuffer(string fileName, int mod, int spl, int ln);
 
-    int initFile(string fileName, int mod);
+    int initFile(string fileName, int mod, int p = MODE);
 
     int writeToFile();
 
     int readFromFile();
+
+    string getFileName(){
+        return _file.fileName();
+    }
 };
 
 //TODO .h .cpp分开
@@ -76,9 +82,10 @@ private:
     }
 
     condition_variable _cond;
+    mutex _mutex;
+
     queue<shared_ptr<FileBuffer>> _que;
     atomic_int _totalBufferNum;
-    mutex _mutex;
 public:
     static BufferManager &getInstance() {
         static BufferManager instance;
@@ -96,6 +103,8 @@ public:
         );
         ptr = static_pointer_cast<T>(_que.front());
         _que.pop();
+        ulk.unlock();
+        DEBUG << "=========left buffer num:" << _que.size() << endl;
     }
 
     //TODO lock 原理

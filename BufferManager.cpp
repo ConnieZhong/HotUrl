@@ -8,10 +8,10 @@
 #include "ErrorCode.h"
 #include "Config.h"
 
-int FileBuffer::initFile(string fileName, int mod) {
+int FileBuffer::initFile(string fileName, int mod, int p) {
     File tmp;
     _file = tmp;
-    int ret = _file.open(fileName.c_str(), mod);
+    int ret = _file.open(fileName.c_str(), mod, p);
     if (ret <= 0) {
         ERROR << "file buffer open file err, ret:" << ret << " file:" << fileName << endl;
         _status = ret;
@@ -64,9 +64,9 @@ int BaseBuffer::addLine(char *data) {
         ERROR << "buff full" << endl;
         return BUFFER_FULL;
     }
-    DEBUG << "addr" << (long) (_data.get()) << " line now:" << _lineNow << " sizecapperLine:" << _sizeCapacityPerLine
-          << " :"
-          << _lineNumCapacity << endl;
+    //DEBUG << "addr" << (long) (_data.get()) << " line now:" << _lineNow << " sizecapperLine:" << _sizeCapacityPerLine
+    //     << " :"
+    //      << _lineNumCapacity << endl;
     void *ret = memcpy(_data.get() + _lineNow * _sizeCapacityPerLine, data, _sizeCapacityPerLine);
     if (ret == NULL) {
         ERROR << "add line err." << endl;

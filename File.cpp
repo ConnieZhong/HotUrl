@@ -7,12 +7,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int File::open(const char *f, int m) {
+int File::open(const char *f, int m, int p) {
     if (_fd > 0){
         close(_fd);
     }
     _fileName = f;
-    _fd =  ::open(f, m);
+    _fd =  ::open(f, m, p);
     return _fd;
 }
 

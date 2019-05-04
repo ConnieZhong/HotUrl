@@ -6,6 +6,9 @@
 #define HOTURL_SCHEDULER_H
 
 #include <atomic>
+#include <mutex>
+#include <condition_variable>
+
 #include "ErrorCode.h"
 #include "ThreadPool.h"
 #include "FetchTask.h"
@@ -22,23 +25,59 @@ private:
     atomic_bool _reduceTaskCreateOver;
 
     atomic_bool _fetchTaskFinied;
+    bool _canReadNext;
+    condition_variable _cond;
+    mutex _mutex;
 
     Scheduler();
 
 public:
+
     int reportMapTaskFinishedOne() {
         _mapTaskFinishedNum++;
+        INFO << "========map finish one, finished num:" << _mapTaskFinishedNum
+             << endl;
+
+        if (_mapTaskCreateOver) {
+            INFO << "==========map task left:"
+                 << _mapTaskCreatedNum - _mapTaskFinishedNum << "======="
+                 << endl;
+        }
+
+        if ((_mapTaskCreatedNum == _mapTaskFinishedNum) && _mapTaskCreateOver) {
+            int ret = beginReduce();
+            if (ret != SUCCESS) {
+                ERROR << "begin reduce err. ret:" << ret << endl;
+                return ret;
+            }
+        }
+
         return SUCCESS;
     }
 
     int reportMapTaskCreatedOne() {
         _mapTaskCreatedNum++;
-        INFO << "report one map task, map task now:" << _mapTaskCreatedNum << endl;
+        INFO << "===========map task create one, map task now:" << _mapTaskCreatedNum << endl;
+        //等待条件变量，不然会导致buffer耗尽
+        std::unique_lock<mutex> ulk(_mutex);                    // 3.全局加锁
+        _canReadNext = false;
+        _cond.wait(ulk, [this]() {
+                       return _canReadNext;
+                   }
+        );
         return SUCCESS;
+    }
+
+    int reportMapTaskReadyOne() {
+        std::lock_guard<mutex> lk(_mutex);
+        _canReadNext = true;
+        _cond.notify_one();
     }
 
     int reportMapTaskCreatedOver() {
         _mapTaskCreateOver = true;
+        INFO << "=============map task create over,total num:" << _mapTaskCreatedNum << "===========" << endl;
+
         if ((_mapTaskCreatedNum == _mapTaskFinishedNum) && _mapTaskCreateOver) {
             int ret = beginReduce();
             if (ret != SUCCESS) {

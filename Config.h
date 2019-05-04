@@ -11,6 +11,7 @@
 
 using namespace std;
 
+//buffer数量个数的约束
 class Config {
 private:
     Config() {
@@ -22,29 +23,37 @@ private:
     string _reduceOutFileName;
 
     int _workerThreadNum;
-    int _bufferSizePerline;
+    int _bufferSizePerLine;
     int _bufferMaxLine;
     int _mapFileNum;
     int _kOfTopK;
+    int _memTotalByte;
+    int _bufferNum;
 
 public:
 
-    int init(string i, string m, string r, int w, int ma,
-             int b, int mf, int k) {
+    int init(string i, string m, string r, int w,
+             int b, int mf, int k, int mm) {
         _inputFilePath = i;
-        _mapOutFilePrefix = m ;
+        _mapOutFilePrefix = m;
         _reduceOutFileName = r;
 
         _workerThreadNum = w;
-        _bufferSizePerline = ma;
-        _bufferMaxLine = b;
+        _bufferSizePerLine = b;
         _mapFileNum = mf;
         _kOfTopK = k;
+        _memTotalByte = mm;
 
-        if (_bufferMaxLine < _kOfTopK) {
-            ERROR << "parm err." << endl;
-            return PARM_ERROR;
+
+        _bufferNum = _workerThreadNum * _mapFileNum * 2;
+        _bufferMaxLine = _memTotalByte / _bufferNum / _bufferSizePerLine;
+
+        if (_bufferMaxLine < 1 || _bufferMaxLine < _kOfTopK) {
+            ERROR << "to small memory" << endl;
+            return MEMORY_ERROR;
         }
+        INFO << "line per buff:" << _bufferMaxLine
+             << " buffer num:" << _bufferNum << endl;
         return SUCCESS;
     }
 
@@ -71,7 +80,7 @@ public:
     }
 
     int bufferSizePerline() {
-        return _bufferSizePerline;
+        return _bufferSizePerLine;
     }
 
     int bufferMaxLine() {
@@ -84,6 +93,10 @@ public:
 
     int kOfTopK() {
         return _kOfTopK;
+    }
+
+    int bufferNum() {
+        return _bufferNum;
     }
 
 };

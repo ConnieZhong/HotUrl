@@ -21,7 +21,7 @@ private:
 
 };
 
-class GetFileTask : public BaseTask {
+class ReadFileTask : public BaseTask {
 public:
     void run();
 private:
