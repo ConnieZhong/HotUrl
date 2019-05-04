@@ -26,23 +26,23 @@ Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz
 
 * 测试步骤
 进入tool目录：
-** 生成测试文件100G
+1. 生成测试文件100G
 './gen 20 9000000 10000000 567 /data/home/hoturl/data/
 最终文件大小：
 du -h --max-depth=1  /data/home/hoturl/data/
 111G    /data/home/hoturl/data/
-** 生成中间文件夹
+2.  生成中间文件夹
 rm -rf  /data/home/hoturl/map_out/ /data/home/hoturl/reduce_out/ /data/home/hoturl/fetch_out/;mkdir /data/home/hoturl/map_out /data/home/hoturl/reduce_out  /data/home/hoturl/fetch_out;
-** 启动程序
+3. 启动程序
 （输入参数含义依次为: input-path map-out-path reduce-out-path fetch-out-path worker-num buffer-per-line(show be 8 larger than url) map-out-file-num k-op-top-k memory-byte) 
 ./HotUrl  /data/NFAAlgorithm/data/  /data/NFAAlgorithm/map_out/  /data/NFAAlgorithm/reduce_out/reduce_out_  /data/NFAAlgorithm/fetch_out/fetch_out 8 1000 100 100 1073741824
 
-** 结果
+* 结果
 map数目：312363
 reduce数目：100
 耗时：723s
 
-** 分析
+* 分析
 目前打点较少，只给出分析思路：
 1.  打点读取文件总耗时，cpu总耗时
 2. map数目比较多，可以建立MapTask池进行复用
@@ -50,7 +50,7 @@ reduce数目：100
 
 
 
-** 运行时部分截图
+* 运行时部分截图
 ![top](_v_images/20190504232620356_3682.png)
 ![运行时](_v_images/20190504231547234_23353.png)
 ![最终](_v_images/20190504231507628_22312.png)
