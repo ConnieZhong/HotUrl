@@ -100,7 +100,7 @@ public:
 
     template<typename T>
     void getBuffer(shared_ptr<T> &ptr) {
-        std::unique_lock<mutex> ulk(_mutex);                    // 3.全局加锁
+        std::unique_lock<mutex> ulk(_mutex);
         _cond.wait(ulk, [this]() {
                        return !_que.empty();
                    }
@@ -111,15 +111,17 @@ public:
         if (_que.size() == 0) {
             DEBUG << "...left buffer num:" << _que.size() << endl;
         }
-        ulk.unlock();
     }
 
     //TODO lock 原理
     void releaseBuffer(shared_ptr<BaseBuffer> ptr) {
-        std::lock_guard<mutex> lk(_mutex);            // 1.全局加锁
-        ptr->clear();
-        static_pointer_cast<FileBuffer>(ptr)->fileClose();
-        _que.push(static_pointer_cast<FileBuffer>(ptr));           // 2.push时独占锁
+        {
+            std::lock_guard<mutex> lk(_mutex);
+            ptr->clear();
+            static_pointer_cast<FileBuffer>(ptr)->fileClose();
+            _que.push(static_pointer_cast<FileBuffer>(ptr));
+
+        }
         _cond.notify_one();
     }
 };

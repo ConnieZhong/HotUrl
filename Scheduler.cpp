@@ -19,7 +19,7 @@ Scheduler::Scheduler() : _mapTaskCreatedNum(0), _mapTaskFinishedNum(0), _mapTask
 
 int Scheduler::begin() {
     shared_ptr<ReadFileTask> getFileTask = make_shared<ReadFileTask>();
-    if(getFileTask.get() == NULL){
+    if(getFileTask == nullptr){
         return MEMORY_ERROR;
     }
     ThreadPool::getInstance().addTask(getFileTask);

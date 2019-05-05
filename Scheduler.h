@@ -59,19 +59,20 @@ public:
         _mapTaskCreatedNum++;
         //INFO << "+++++++ map task create one, map task now:" << _mapTaskCreatedNum << " +++++++"<<endl;
         //等待条件变量，不然会导致buffer耗尽
-        std::unique_lock<mutex> ulk(_mutex);                    // 3.全局加锁
+        std::unique_lock<mutex> ulk(_mutex);
         _canReadNext = false;
         _cond.wait(ulk, [this]() {
                        return _canReadNext;
                    }
         );
-        ulk.unlock();
         return SUCCESS;
     }
 
     int reportMapTaskReadyOne() {
-        std::lock_guard<mutex> lk(_mutex);
-        _canReadNext = true;
+        {
+            std::lock_guard<mutex> lk(_mutex);
+            _canReadNext = true;
+        }
         _cond.notify_one();
     }
 

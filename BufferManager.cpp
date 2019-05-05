@@ -31,7 +31,7 @@ int BaseBuffer::init(int spl, int ln) {
     _lineNumCapacity = ln;
     _lineNow = 0;
     _data = make_shared_array<char>(_sizeCapacityPerLine * _lineNumCapacity);
-    if (_data.get() == NULL) {
+    if (_data == nullptr) {
         ERROR << "file buffer alloc error" << endl;
         _status = MEMORY_ERROR;
         return _status;
@@ -51,7 +51,7 @@ int BaseBuffer::init(int spl, int ln) {
 
 int BaseBuffer::clear() {
     _lineNow = 0;
-    if (_data.get() != NULL) {
+    if (_data != nullptr) {
         void *ret = memset(_data.get(),
                            _sizeCapacityPerLine * _lineNumCapacity, 0);
         return ret != NULL ? SUCCESS : MEMORY_ERROR;
@@ -154,7 +154,7 @@ int BufferManager::init(int totalBuffer) {
     //事先分配好内存
     for (int i = 0; i < _totalBufferNum; ++i) {
         shared_ptr<FileBuffer> buffer = make_shared<FileBuffer>();
-        if (buffer.get() == NULL) {
+        if (buffer == nullptr) {
             ERROR << "buffer init err" << endl;
             return MEMORY_ERROR;
         }
