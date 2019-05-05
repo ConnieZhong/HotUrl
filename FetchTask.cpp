@@ -1,6 +1,7 @@
 //
 // Created by conniezhong on 2019/5/3.
 //
+#include <fstream>
 #include "FetchTask.h"
 #include "Config.h"
 #include "File.h"
@@ -33,6 +34,7 @@ void FetchTask::run() {
             ERROR << "file:" << Config::getInstance().reduceOutFileName() << " read err. ret:" << ret << endl;
             return;
         }
+
         int lineNow = fileBuffer->lineNow();
 
         for (int i = 0; i < lineNow; ++i) {
@@ -43,7 +45,7 @@ void FetchTask::run() {
                 ERROR << "read buffer err. ret:" << ret << " file name:" << Config::getInstance().reduceOutFileName() << endl;
                 return;
             }
-            DEBUG << "fetch data: url:" << data << " num:" << num << endl;
+            ////DEBUG <<  "fetch data: url:" << data << " num:" << num << endl;
             if (num > vec[0].first) {
                 vec[0].first = num;
                 vec[0].second = data;
@@ -51,9 +53,13 @@ void FetchTask::run() {
             }
         }
     }
+
+    fstream f(Config::getInstance().fetchOutFileName(),ios::out);
     for (auto it: vec) {
-        INFO << "result is:" << it.first << ": " << it.second << endl;
+        //INFO << "result is:" << it.first << ": " << it.second << endl;
+        f<< it.first << "|" << it.second <<endl;
     }
+    f.close();
     Scheduler::getInstance().reportFetchTaskFinished();
 
 }

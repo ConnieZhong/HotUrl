@@ -22,7 +22,6 @@ string getRandStrByLength(const int len) {
 }
 
 int getRandomNumByRange(int a, int b) {
-    srand(time(NULL));
     return rand() % (a - b + 1) + b;
 }
 
@@ -43,6 +42,7 @@ string intToString(int i) {
 int main(int argc, char *argv[]) {
     string urlPrefix = "http://";
     string urlSuffix = ".com";
+    srand(time(NULL));
 
     //TODO 丰富使用说明 --help选项
     //参数1:多少个文件
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     //TODO 丰富生成器功能
     int urlMinLength = urlPrefix.length() + urlSuffix.length() + 1;
     string help = "parm should be: num-of-file min-line-of-file "
-                  "max-line-of-file length-of-file(should be bigger than " + intToString(urlMinLength) +
+                  "max-line-of-file length-of-url(should be bigger than " + intToString(urlMinLength) +
                   ") out-put-path";
     if (argc != 6) {
         cout << "parm err, " << help << endl;

@@ -29,5 +29,5 @@ shared_ptr<T> make_shared_array(size_t size)
 
 #define INFO std::cout << "INFO|" << __FILE__ << ":" << __LINE__ << " "
 #define ERROR std::cout << "ERROR|" << __FILE__ << ":" << __LINE__ << " "
-#define DEBUG std::cout << "DEBUG|" << __FILE__ << ":" << __LINE__ << " "
+#define DEBUG  std::cout << "DEBUG|" << __FILE__ << ":" << __LINE__ << " "
 #endif //HOTURL_COMM_H

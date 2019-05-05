@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
-project(HotUrl)
+project(gen)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(HotUrl main.cpp)
+add_executable(gen main.cpp)

@@ -28,7 +28,7 @@ int Scheduler::begin() {
 
 int Scheduler::beginReduce() {
     //打开文件
-    INFO <<"==========reduce begin===========" <<endl;
+    INFO <<"+++++++ reduce begin +++++++" <<endl;
     DIR *dir;
     struct dirent *ptr;
 
@@ -41,8 +41,8 @@ int Scheduler::beginReduce() {
     while ((ptr = readdir(dir)) != NULL) {
         if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)    ///current dir OR parrent dir
             continue;
-        else if (ptr->d_type == 8) {
-            INFO << "reduce begin process " << ptr->d_name << endl;
+        else if (/*ptr->d_type == 8*/1) {
+            INFO << "reduce begin process file:" << ptr->d_name << endl;
             shared_ptr<ReduceTask> reduceTask = make_shared<ReduceTask>();
 
             reduceTask->setMapFileName(filePath + "/" + ptr->d_name);

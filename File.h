@@ -22,12 +22,18 @@ public:
 
     int write(const void *, unsigned int);
 
+    int fileClose(){
+        if (_fd !=0){
+            ::close(_fd);
+            _fd = 0;
+        }
+    }
     File() : _fd(0) {
     }
 
     ~File() {
         if (_fd != 0) {
-            close(_fd);
+            ::close(_fd);
         }
     }
 

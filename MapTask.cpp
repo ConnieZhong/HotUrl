@@ -22,7 +22,7 @@ using namespace std;
 
 void MapTask::run() {
     //读取数据，进行hash到不同的文件中
-    DEBUG << "one map begin..., need buffer num:" << Config::getInstance().mapFileNum() << endl;
+    //DEBUG <<  "one map begin..., need buffer num:" << Config::getInstance().mapFileNum() << endl;
     unsigned int hashCode = 0;
     //创建map文件
     for (int i = 0; i < Config::getInstance().mapFileNum(); ++i) {
@@ -39,7 +39,7 @@ void MapTask::run() {
         _fdVec.push_back(fileBuffer);
     }
     Scheduler::getInstance().reportMapTaskReadyOne();
-    DEBUG << "map get buffer success" << endl;
+    //DEBUG <<  "map get buffer success" << endl;
 
 
     //TODO 文件还是太大了还需要进行拆解
@@ -63,7 +63,7 @@ void MapTask::run() {
                 ERROR << "write file err. ret:" << ret << endl;
                 return;
             }
-            DEBUG << "file name:" << _fdVec[hashCode]->getFileName() << " write one time" << endl;
+            //DEBUG <<  "file name:" << _fdVec[hashCode]->getFileName() << " write one time" << endl;
             ret = _fdVec[hashCode]->clear();
             if (ret != SUCCESS) {
                 ERROR << "clear buffer err. ret:" << ret << endl;
@@ -71,7 +71,7 @@ void MapTask::run() {
             }
         }
 
-        //DEBUG << "data :" << data << " will write to:" << hashCode << endl;
+        ////DEBUG <<  "data :" << data << " will write to:" << hashCode << endl;
     }
     for (auto it:_fdVec) {
         if (!it->isEmpty()) {
@@ -80,7 +80,7 @@ void MapTask::run() {
                 ERROR << "write file err. ret:" << ret << endl;
                 return;
             }
-            DEBUG << "file name:" << it->getFileName() << " write one time" << endl;
+            //DEBUG <<  "file name:" << it->getFileName() << " write one time" << endl;
         }
 
     }
@@ -109,18 +109,20 @@ void ReadFileTask::run() {
     while ((ptr = readdir(dir)) != NULL) {
         if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)    ///current dir OR parrent dir
             continue;
-        else if (ptr->d_type == 8) {
-            INFO << "begin process " << ptr->d_name << endl;
+        else if (/*ptr->d_type == 8*/ 1) {
+            INFO << "read task begin process file" << ptr->d_name << endl;
             int ret = readFileToTask(Config::getInstance().inputFilePath() + "/" + ptr->d_name);
             if (ret != SUCCESS) {
                 INFO << "read file to task err. file:" << ptr->d_name << " ret: " << ret << endl;
                 closedir(dir);
                 return;
             }
+            INFO << "file:" << Config::getInstance().inputFilePath() << "/" << ptr->d_name << " read over" << endl;
         } else {
             INFO << "file type:" << ptr->d_type << " file name:" << ptr->d_name
                  << " will not be processed." << endl;
         }
+
     }
 
     //向scheduler报告
@@ -140,8 +142,6 @@ int ReadFileTask::readFileToTask(string fileName) {
     shared_ptr<char> data = make_shared_array<char>(Config::getInstance().bufferSizePerline());
     while (!in.eof()) {
         //TODO 比较不同的接口的效率
-        //TODO 消除8
-
         void *tmp = memset(data.get(), Config::getInstance().bufferSizePerline(), 0);
         if (tmp == NULL) {
             ERROR << "reset buff err" << endl;
@@ -152,7 +152,7 @@ int ReadFileTask::readFileToTask(string fileName) {
             INFO << "file get over. file name: " << fileName << endl;
             break;
         }
-        //DEBUG << "get line is:" << data.get() << ":" << Config::getInstance().bufferSizePerline() << endl;
+        ////DEBUG <<  "get line is:" << data.get() << ":" << Config::getInstance().bufferSizePerline() << endl;
         int ret = baseBuffer->addLine(data.get());
         if (ret != 0) {
             ERROR << "add line error" << endl;
@@ -163,20 +163,18 @@ int ReadFileTask::readFileToTask(string fileName) {
             shared_ptr<MapTask> mapTask = make_shared<MapTask>();
             mapTask->setBufferPtr(baseBuffer);
 
-            //          Scheduler::getInstance().setCanNotRead();
             ThreadPool::getInstance().addTask(mapTask);
 
             Scheduler::getInstance().reportMapTaskCreatedOne();
             BufferManager::getInstance().getBuffer(baseBuffer);
         }
     }
+    INFO << "file read over. file:" << fileName << endl;
     if (!baseBuffer->isEmpty()) {
         shared_ptr<MapTask> mapTask = make_shared<MapTask>();
         mapTask->setBufferPtr(baseBuffer);
 
-        //        Scheduler::getInstance().setCanNotRead();
         ThreadPool::getInstance().addTask(mapTask);
-
         Scheduler::getInstance().reportMapTaskCreatedOne();
     }
     in.close();

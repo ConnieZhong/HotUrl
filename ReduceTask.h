@@ -6,17 +6,21 @@
 #define HOTURL_REDUCETASK_H
 
 #include "ThreadPool.h"
+#include "BufferManager.h"
+
 
 using namespace std;
 
 class ReduceTask : public BaseTask {
 private:
     string _mapFileName;
+    shared_ptr<FileBuffer> _fileBuffer;
 public:
     void run();
     void setMapFileName(string name){
         _mapFileName = name;
     }
+    ~ReduceTask();
 
 };
 

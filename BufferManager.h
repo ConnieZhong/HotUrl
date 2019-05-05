@@ -54,7 +54,6 @@ public:
     }
 
 
-
 };
 
 class FileBuffer : public BaseBuffer {
@@ -70,9 +69,14 @@ public:
 
     int readFromFile();
 
-    string getFileName(){
+    string getFileName() {
         return _file.fileName();
     }
+
+    void fileClose() {
+        _file.fileClose();
+    }
+
 };
 
 //TODO .h .cpp分开
@@ -102,14 +106,19 @@ public:
                    }
         );
         ptr = static_pointer_cast<T>(_que.front());
+        static_pointer_cast<BaseBuffer>(ptr)->clear();
         _que.pop();
+        if (_que.size() == 0) {
+            DEBUG << "...left buffer num:" << _que.size() << endl;
+        }
         ulk.unlock();
-        DEBUG << "=========left buffer num:" << _que.size() << endl;
     }
 
     //TODO lock 原理
     void releaseBuffer(shared_ptr<BaseBuffer> ptr) {
         std::lock_guard<mutex> lk(_mutex);            // 1.全局加锁
+        ptr->clear();
+        static_pointer_cast<FileBuffer>(ptr)->fileClose();
         _que.push(static_pointer_cast<FileBuffer>(ptr));           // 2.push时独占锁
         _cond.notify_one();
     }

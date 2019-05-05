@@ -21,6 +21,7 @@ private:
     string _inputFilePath;
     string _mapOutFilePrefix;
     string _reduceOutFileName;
+    string _fetchOutFileName;
 
     int _workerThreadNum;
     int _bufferSizePerLine;
@@ -32,11 +33,12 @@ private:
 
 public:
 
-    int init(string i, string m, string r, int w,
+    int init(string i, string m, string r,string fo, int w,
              int b, int mf, int k, int mm) {
         _inputFilePath = i;
         _mapOutFilePrefix = m;
         _reduceOutFileName = r;
+        _fetchOutFileName = fo;
 
         _workerThreadNum = w;
         _bufferSizePerLine = b;
@@ -75,6 +77,10 @@ public:
         return _reduceOutFileName;
     }
 
+    string fetchOutFileName(){
+        return _fetchOutFileName;
+    }
+
     int workerThreadNum() {
         return _workerThreadNum;
     }
@@ -98,6 +104,7 @@ public:
     int bufferNum() {
         return _bufferNum;
     }
+
 
 };
 

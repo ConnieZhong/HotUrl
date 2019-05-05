@@ -43,7 +43,7 @@ int BaseBuffer::init(int spl, int ln) {
         _status = MEMORY_ERROR;
         return _status;
     }
-    DEBUG << "addr:" << (long) (_data.get()) << "==========" << _sizeCapacityPerLine << ":" << _lineNumCapacity << endl;
+    //DEBUG <<  "addr:" << (long) (_data.get()) << "+++++++" << _sizeCapacityPerLine << ":" << _lineNumCapacity << endl;
     _status = SUCCESS;
     return _status;
 }
@@ -64,7 +64,7 @@ int BaseBuffer::addLine(char *data) {
         ERROR << "buff full" << endl;
         return BUFFER_FULL;
     }
-    //DEBUG << "addr" << (long) (_data.get()) << " line now:" << _lineNow << " sizecapperLine:" << _sizeCapacityPerLine
+    ////DEBUG <<  "addr" << (long) (_data.get()) << " line now:" << _lineNow << " sizecapperLine:" << _sizeCapacityPerLine
     //     << " :"
     //      << _lineNumCapacity << endl;
     void *ret = memcpy(_data.get() + _lineNow * _sizeCapacityPerLine, data, _sizeCapacityPerLine);
@@ -116,7 +116,7 @@ int BaseBuffer::getLine(int lineNo, char **out, int &num) {
 }
 
 bool BaseBuffer::isFull() {
-    return _lineNow == _lineNumCapacity;
+    return _lineNow == _lineNumCapacity - 1;
 }
 
 bool BaseBuffer::isEmpty() {

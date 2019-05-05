@@ -35,12 +35,12 @@ public:
 
     int reportMapTaskFinishedOne() {
         _mapTaskFinishedNum++;
-        INFO << "========map finish one, finished num:" << _mapTaskFinishedNum
-             << endl;
+        //INFO << "+++++++ map finish one, finished num:" << _mapTaskFinishedNum
+        //     << " +++++++"<< endl;
 
         if (_mapTaskCreateOver) {
-            INFO << "==========map task left:"
-                 << _mapTaskCreatedNum - _mapTaskFinishedNum << "======="
+            INFO << "+++++++ map task left:"
+                 << _mapTaskCreatedNum - _mapTaskFinishedNum << " +++++++"
                  << endl;
         }
 
@@ -57,7 +57,7 @@ public:
 
     int reportMapTaskCreatedOne() {
         _mapTaskCreatedNum++;
-        INFO << "===========map task create one, map task now:" << _mapTaskCreatedNum << endl;
+        //INFO << "+++++++ map task create one, map task now:" << _mapTaskCreatedNum << " +++++++"<<endl;
         //等待条件变量，不然会导致buffer耗尽
         std::unique_lock<mutex> ulk(_mutex);                    // 3.全局加锁
         _canReadNext = false;
@@ -65,6 +65,7 @@ public:
                        return _canReadNext;
                    }
         );
+        ulk.unlock();
         return SUCCESS;
     }
 
@@ -76,7 +77,7 @@ public:
 
     int reportMapTaskCreatedOver() {
         _mapTaskCreateOver = true;
-        INFO << "=============map task create over,total num:" << _mapTaskCreatedNum << "===========" << endl;
+        INFO << "+++++++ map task create over,total num:" << _mapTaskCreatedNum << " +++++++" << endl;
 
         if ((_mapTaskCreatedNum == _mapTaskFinishedNum) && _mapTaskCreateOver) {
             int ret = beginReduce();
@@ -114,7 +115,7 @@ public:
 
     int reportFetchTaskFinished() {
         _fetchTaskFinied = true;
-        INFO << "fetch task finished." << endl;
+        INFO << "+++++++ fetch task finished +++++++" << endl;
         return SUCCESS;
     }
 
