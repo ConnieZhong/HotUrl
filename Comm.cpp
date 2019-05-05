@@ -2,7 +2,6 @@
 // Created by conniezhong on 2019/5/3.
 //
 #include "Comm.h"
-
 unsigned int hotUrlHash(char *str) {
     //BKDRHash
     //TODO 比较一下不同hash
@@ -26,6 +25,8 @@ bool Compare(pair<int, string> a, pair<int, string> b) {
     return a.first > b.first;
 }
 
-
+void doSomeThing(shared_ptr<BaseTask> ptr) {
+    ptr->run();
+}
 
 

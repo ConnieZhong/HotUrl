@@ -28,19 +28,18 @@ void MapTask::run() {
     for (int i = 0; i < Config::getInstance().mapFileNum(); ++i) {
         shared_ptr<FileBuffer> fileBuffer;
         BufferManager::getInstance().getBuffer(fileBuffer);
-        int status = fileBuffer->initFile(Config::getInstance().mapOutFilePrefix()
-                                          + intToString(i).c_str(),
-                                          O_WRONLY | O_APPEND | O_CREAT, MODE);
-        if (status != SUCCESS) {
+        int fd = BufferManager::getInstance().getOuterFd(i);
+        if (fd <= 0) {
             ERROR << "init buffer for map err: file name:" << Config::getInstance().mapOutFilePrefix() + intToString(i)
-                  << " status:" << status << endl;
+                  << " fd:" << fd << endl;
             return;
         }
+        fileBuffer->setOuterFd(fd);
+
+        Scheduler::getInstance().reportMapTaskReadyOne();
         _fdVec.push_back(fileBuffer);
     }
-    Scheduler::getInstance().reportMapTaskReadyOne();
     //DEBUG <<  "map get buffer success" << endl;
-
 
     //TODO 文件还是太大了还需要进行拆解
     for (int i = 0; i < _bufferPtr->lineNow(); ++i) {
@@ -58,7 +57,7 @@ void MapTask::run() {
         }
 
         if (_fdVec[hashCode]->isFull()) {
-            ret = _fdVec[hashCode]->writeToFile();
+            ret = _fdVec[hashCode]->writeToOuterFd();
             if (ret != SUCCESS) {
                 ERROR << "write file err. ret:" << ret << endl;
                 return;
@@ -71,11 +70,11 @@ void MapTask::run() {
             }
         }
 
-        ////DEBUG <<  "data :" << data << " will write to:" << hashCode << endl;
+        //DEBUG <<  "data :" << data << " will write to:" << hashCode << endl;
     }
     for (auto it:_fdVec) {
         if (!it->isEmpty()) {
-            int ret = it->writeToFile();
+            int ret = it->writeToOuterFd();
             if (ret != SUCCESS) {
                 ERROR << "write file err. ret:" << ret << endl;
                 return;
@@ -152,7 +151,7 @@ int ReadFileTask::readFileToTask(string fileName) {
             INFO << "file get over. file name: " << fileName << endl;
             break;
         }
-        ////DEBUG <<  "get line is:" << data.get() << ":" << Config::getInstance().bufferSizePerline() << endl;
+        //DEBUG <<  "get line is:" << data.get() << ":" << Config::getInstance().bufferSizePerline() << endl;
         int ret = baseBuffer->addLine(data.get());
         if (ret != 0) {
             ERROR << "add line error" << endl;

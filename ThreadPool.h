@@ -1,77 +1,73 @@
-//
-// Created by conniezhong on 2019/5/2.
-//
-
-#ifndef HOTURL_THREADPOOL_H
-#define HOTURL_THREADPOOL_H
-
-#include <queue>
-#include <iostream>
-#include <mutex>
-#include <thread>
+#ifndef THREAD_POOL_H
+#define THREAD_POOL_H
 #include <vector>
-#include <unistd.h>
-#include <atomic>
-#include <pthread.h>
+#include <queue>
+#include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <future>
+#include <functional>
+#include <stdexcept>
+#include "Comm.h"
+#include "ErrorCode.h"
 
 using namespace std;
 
-class BaseTask {
-public:
-    //可以继承这个类重写该方法执行任务
-    //TODO 添加信号量处理方式
-    virtual void run()=0;
-};
-
-class Thread {
-private:
-    thread _thread;
-    atomic_bool _isFree;
-    shared_ptr<BaseTask> _task;
-    mutex _mutex;
-public:
-    //构造
-    Thread() : _isFree(true), _task(nullptr) {
-        _thread = thread(&Thread::run, this);
-        _thread.detach();
-    }
-
-    //是否空闲
-    bool isFree() {
-        return _isFree;
-    }
-
-    //添加任务
-    void addTask(shared_ptr<BaseTask> task);
-
-    //如果有任务则执行任务，否则自旋
-    void run();
-
-};
-
 class ThreadPool {
 private:
-    queue<shared_ptr<BaseTask>> task_queue;
-    vector<shared_ptr<Thread> > _pool;
-    mutex _mutex;
-
+    ThreadPool(){}
 
 public:
-    int init(int threadNum);
     static ThreadPool &getInstance() {
         static ThreadPool instance;
         return instance;
     }
+    int init(size_t);
+    template<class F, class... Args>
+    auto enqueue(F &&f, Args &&... args)
+    -> std::future<typename std::result_of<F(Args...)>::type>;
 
-    //释放线程池
-    virtual  ~ThreadPool();
+    ~ThreadPool();
 
-    //添加任务
-    void addTask(shared_ptr<BaseTask> task);
+    int addTask(shared_ptr<BaseTask> ptr) {
+        enqueue(doSomeThing, ptr);
+        return SUCCESS;
+    }
 
-    //轮询
-    void run();
+private:
+    // need to keep track of threads so we can join them
+    std::vector<std::thread> _worker;
+    // the task queue
+    std::queue<std::function<void()> > _tasks;
 
+    // synchronization
+    std::mutex _queueMutex;
+    std::condition_variable _condition;
+    bool stop;
 };
 
-#endif //HOTURL_THREADPOOL_H
+template<class F, class... Args>
+auto ThreadPool::enqueue(F &&f, Args &&... args)
+-> std::future<typename std::result_of<F(Args...)>::type> {
+    using return_type = typename std::result_of<F(Args...)>::type;
+
+    auto task = std::make_shared<std::packaged_task<return_type()> >(
+            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+    );
+
+    std::future<return_type> res = task->get_future();
+    {
+        std::unique_lock<std::mutex> lock(_queueMutex);
+
+        // don't allow enqueueing after stopping the pool
+        if (stop)
+            throw std::runtime_error("enqueue on stopped ThreadPool");
+
+        _tasks.emplace([task]() { (*task)(); });
+    }
+    _condition.notify_one();
+    return res;
+}
+
+#endif

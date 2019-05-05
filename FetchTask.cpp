@@ -45,7 +45,7 @@ void FetchTask::run() {
                 ERROR << "read buffer err. ret:" << ret << " file name:" << Config::getInstance().reduceOutFileName() << endl;
                 return;
             }
-            ////DEBUG <<  "fetch data: url:" << data << " num:" << num << endl;
+            //DEBUG <<  "fetch data: url:" << data << " num:" << num << endl;
             if (num > vec[0].first) {
                 vec[0].first = num;
                 vec[0].second = data;

@@ -2,21 +2,22 @@
 // Created by conniezhong on 2019/5/2.
 //
 
-#ifndef HOTURL_ITEMMANAGER_H
-#define HOTURL_ITEMMANAGER_H
+#ifndef HOTURL_TASKMANAGER_H
+#define HOTURL_TASKMANAGER_H
 
 #include <memory>
 
 using namespace std;
 
-class Task {
+class BaseTask {
 public:
+    virtual void run(){};
 
 };
 
-class TaskManager{
+class TaskManager {
 
 
 };
 
-#endif //HOTURL_ITEMMANAGER_H
+#endif //HOTURL_TASKMANAGER_H

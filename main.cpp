@@ -52,17 +52,19 @@ int main(int argc, char *argv[]) {
         return ret;
     }
 
-    ret = ThreadPool::getInstance().init(Config::getInstance().workerThreadNum());
-    if (ret != SUCCESS) {
-        ERROR << "thread pool init err" << endl;
-        return INNER_ERROR;
-    }
 
     ret = BufferManager::getInstance().init(Config::getInstance().bufferNum());
     if (ret != SUCCESS) {
         ERROR << "buffer manager init err" << endl;
         return INNER_ERROR;
     }
+
+    ret = ThreadPool::getInstance().init(Config::getInstance().workerThreadNum());
+    if (ret != SUCCESS) {
+        ERROR << "thread pool init err" << endl;
+        return INNER_ERROR;
+    }
+
 
     ret = Scheduler::getInstance().begin();
     if (ret != SUCCESS) {

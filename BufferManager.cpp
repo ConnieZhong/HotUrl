@@ -64,7 +64,7 @@ int BaseBuffer::addLine(char *data) {
         ERROR << "buff full" << endl;
         return BUFFER_FULL;
     }
-    ////DEBUG <<  "addr" << (long) (_data.get()) << " line now:" << _lineNow << " sizecapperLine:" << _sizeCapacityPerLine
+    //DEBUG <<  "addr" << (long) (_data.get()) << " line now:" << _lineNow << " sizecapperLine:" << _sizeCapacityPerLine
     //     << " :"
     //      << _lineNumCapacity << endl;
     void *ret = memcpy(_data.get() + _lineNow * _sizeCapacityPerLine, data, _sizeCapacityPerLine);
@@ -132,7 +132,14 @@ int FileBuffer::writeToFile() {
     return ret;
 }
 
-//TODO 修改参数
+int FileBuffer::writeToOuterFd() {
+    int ret = ::write(_outerFd, _data.get(), _sizeCapacityPerLine * _lineNow);
+    if (ret == _sizeCapacityPerLine * _lineNow) {
+        return SUCCESS;
+    }
+    return ret;
+}
+
 int FileBuffer::readFromFile() {
 
     int ret = _file.read(_data.get(), _sizeCapacityPerLine * _lineNumCapacity);
@@ -165,6 +172,20 @@ int BufferManager::init(int totalBuffer) {
             return ret;
         }
         _que.push(buffer);
+    }
+
+    //预先打开reduce文件
+    for (int i = 0; i < Config::getInstance().mapFileNum(); i++) {
+
+        int ret = ::open((Config::getInstance().mapOutFilePrefix()
+                         + intToString(i)).c_str(),
+                         O_WRONLY | O_APPEND | O_CREAT, MODE);
+        if (ret <= 0) {
+            ERROR << "open file err. file:" << Config::getInstance().mapOutFilePrefix()
+                  << intToString(i).c_str() << endl;
+            return INNER_ERROR;
+        }
+        _mapOutFile.push_back(ret);
     }
     return SUCCESS;
 }

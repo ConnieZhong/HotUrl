@@ -8,6 +8,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <unistd.h>
 
 #include "ErrorCode.h"
 #include "ThreadPool.h"
@@ -32,6 +33,8 @@ private:
     Scheduler();
 
 public:
+    int beginReduce();
+    int begin();
 
     int reportMapTaskFinishedOne() {
         _mapTaskFinishedNum++;
@@ -57,23 +60,28 @@ public:
 
     int reportMapTaskCreatedOne() {
         _mapTaskCreatedNum++;
-        //INFO << "+++++++ map task create one, map task now:" << _mapTaskCreatedNum << " +++++++"<<endl;
-        //等待条件变量，不然会导致buffer耗尽
-        std::unique_lock<mutex> ulk(_mutex);
-        _canReadNext = false;
-        _cond.wait(ulk, [this]() {
+        INFO << "+++++++ map task create one, map task now:" << _mapTaskCreatedNum << " +++++++"<<endl;
+        //等待条件变量，不然如果readfile太快了，可能导致buffer耗尽。但是目前看起来，由于disk还是比内存慢，没有出现这样的情况
+        //DEBUG<<" waite con begin..." <<endl;
+
+        //std::unique_lock<mutex> ulk(_mutex);
+        //_canReadNext = false;
+        /*_cond.wait(ulk, [this]() {
                        return _canReadNext;
                    }
-        );
+        );*/
+        //sleep(1);
+        //DEBUG<<" waite con over..." <<endl;
         return SUCCESS;
     }
 
     int reportMapTaskReadyOne() {
         {
-            std::lock_guard<mutex> lk(_mutex);
-            _canReadNext = true;
+            //DEBUG << "map task ready one..." << endl;
+            //std::lock_guard<mutex> lk(_mutex);
+            //_canReadNext = true;
         }
-        _cond.notify_one();
+        //_cond.notify_one();
     }
 
     int reportMapTaskCreatedOver() {
@@ -124,14 +132,12 @@ public:
         return _fetchTaskFinied;
     }
 
-    int beginReduce();
 
     static Scheduler &getInstance() {
         static Scheduler instance;
         return instance;
     }
 
-    int begin();
 
 };
 

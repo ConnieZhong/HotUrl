@@ -75,7 +75,7 @@ void ReduceTask::run() {
         }
     }
 
-    //TODO 去掉危险函数
+    //TODO 去掉不安全的函数
     for (size_t i = 0; i < vec.size(); ++i) {
         ret = _fileBuffer->addLine(vec[i].second.c_str(), vec[i].first);
         if (ret != SUCCESS) {

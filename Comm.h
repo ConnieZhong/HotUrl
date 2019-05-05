@@ -11,6 +11,8 @@
 #include<sys/types.h>
 #include<sys/stat.h>
 #include<fcntl.h>
+#include "TaskManager.h"
+
 
 using namespace std;
 
@@ -24,6 +26,8 @@ shared_ptr<T> make_shared_array(size_t size)
 {
     return shared_ptr<T>(new T[size], default_delete<T[]>());
 }
+
+void doSomeThing(shared_ptr<BaseTask> ptr);
 
 #define MODE S_IRWXU | S_IXGRP | S_IROTH | S_IXOTH
 

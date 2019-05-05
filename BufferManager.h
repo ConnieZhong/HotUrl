@@ -59,6 +59,7 @@ public:
 class FileBuffer : public BaseBuffer {
 private:
     File _file;
+    int _outerFd;
 
 public:
     //FileBuffer(string fileName, int mod, int spl, int ln);
@@ -66,6 +67,8 @@ public:
     int initFile(string fileName, int mod, int p = MODE);
 
     int writeToFile();
+
+    int writeToOuterFd();
 
     int readFromFile();
 
@@ -76,13 +79,21 @@ public:
     void fileClose() {
         _file.fileClose();
     }
+    void setOuterFd(int fd){
+        _outerFd = fd;
+    }
 
 };
 
-//TODO .h .cpp分开
 class BufferManager {
 private:
     BufferManager() {
+    }
+
+    ~BufferManager(){
+        for(auto it:_mapOutFile){
+            close(it);
+        }
     }
 
     condition_variable _cond;
@@ -90,6 +101,7 @@ private:
 
     queue<shared_ptr<FileBuffer>> _que;
     atomic_int _totalBufferNum;
+    vector<int> _mapOutFile;
 public:
     static BufferManager &getInstance() {
         static BufferManager instance;
@@ -113,7 +125,6 @@ public:
         }
     }
 
-    //TODO lock 原理
     void releaseBuffer(shared_ptr<BaseBuffer> ptr) {
         {
             std::lock_guard<mutex> lk(_mutex);
@@ -124,6 +135,11 @@ public:
         }
         _cond.notify_one();
     }
+
+    int getOuterFd(size_t i){
+        return _mapOutFile[i];
+    }
+
 };
 
 
