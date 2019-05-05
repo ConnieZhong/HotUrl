@@ -35,13 +35,14 @@ du -h --max-depth=1  /data/home/hoturl/data/
 **生成中间文件夹
 rm -rf  /data/home/hoturl/map_out/ /data/home/hoturl/reduce_out/ /data/home/hoturl/fetch_out/;mkdir /data/home/hoturl/map_out /data/home/hoturl/reduce_out  /data/home/hoturl/fetch_out;
 **启动程序
+限制堆上内存是1G（如果要限制含有栈上的内存，需要把堆上内存总数减少，栈上内存主要消耗是reduce阶段unordered_map）
 （输入参数含义依次为: input-path map-out-path reduce-out-path fetch-out-path worker-num buffer-per-line(show be 8 larger than url) map-out-file-num k-op-top-k memory-byte) 
 ./HotUrl  /data/NFAAlgorithm/data/  /data/NFAAlgorithm/map_out/  /data/NFAAlgorithm/reduce_out/reduce_out_  /data/NFAAlgorithm/fetch_out/fetch_out 8 1000 100 100 1073741824
 
 **结果
 map数目：312363
 reduce数目：100
-耗时：43s
+耗时：743098ms
 
 **分析
 目前打点较少，只给出分析思路：
